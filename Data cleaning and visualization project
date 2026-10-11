@@ -1,0 +1,136 @@
+import csv
+
+# Step 1: Create dataset
+
+data = [
+    ["Age", "Department", "Salary"],
+    [22, "IT", 30000],
+    [25, "HR", 35000],
+    ["", "Finance", 45000],
+    [30, "IT", 50000],
+    [35, "", 40000],
+    [40, "Finance", ""],
+    [45, "IT", 65000],
+    [50, "Sales", 38000],
+    [29, "Sales", 42000],
+    [32, "Finance", 48000]
+]
+
+with open("employee_data.csv", "w", newline="") as file:
+    writer = csv.writer(file)
+    writer.writerows(data)
+
+# Step 2: Read dataset
+
+with open("employee_data.csv", "r") as file:
+    dataset = list(csv.reader(file))
+
+print("Original Dataset:")
+for row in dataset:
+    print(row)
+
+# Step 3: Check missing values
+
+print("\nMissing Values:")
+
+for i, column in enumerate(dataset[0]):
+    count = 0
+
+    for row in dataset[1:]:
+        if row[i] == "":
+            count += 1
+
+    print(column, ":", count)
+
+# Step 4: Remove duplicate rows
+
+unique_rows = [dataset[0]]
+
+for row in dataset[1:]:
+    if row not in unique_rows:
+        unique_rows.append(row)
+
+dataset = unique_rows
+
+print("\nDuplicate rows removed!")
+print("Total records:", len(dataset) - 1)
+
+# Step 5: Handle missing values
+
+for row in dataset[1:]:
+    for i in range(len(row)):
+        if row[i] == "":
+            row[i] = "Unknown"
+
+print("\nMissing Values Handled:")
+for row in dataset:
+    print(row)
+
+# Step 6: Convert data types
+
+for row in dataset[1:]:
+    if row[0] != "Unknown":
+        row[0] = int(row[0])
+
+    if row[2] != "Unknown":
+        row[2] = int(row[2])
+
+print("\nData Types Converted!")
+for row in dataset:
+    print(row)
+
+# Step 7: Handle outliers in Salary
+
+salaries = []
+
+for row in dataset[1:]:
+    if row[2] != "Unknown":
+        salaries.append(row[2])
+
+salaries.sort()
+
+q1 = salaries[len(salaries) // 4]
+q3 = salaries[(3 * len(salaries)) // 4]
+
+iqr = q3 - q1
+
+lower = q1 - 1.5 * iqr
+upper = q3 + 1.5 * iqr
+
+for row in dataset[1:]:
+    if row[2] != "Unknown":
+        salary = row[2]
+
+        if salary < lower or salary > upper:
+            row[2] = int((q1 + q3) / 2)
+
+print("\nOutliers Handled!")
+for row in dataset:
+    print(row)
+
+# Step 8: Encode categorical variables
+
+departments = {}
+
+for row in dataset[1:]:
+    dept = row[1]
+
+    if dept not in departments:
+        departments[dept] = len(departments)
+
+for row in dataset[1:]:
+    row.append(departments[row[1]])
+
+dataset[0].append("Department_Code")
+
+print("\nDepartment Encoded!")
+for row in dataset:
+    print(row)
+
+# Step 9: Save cleaned dataset
+
+with open("cleaned_employee_data.csv", "w", newline="") as file:
+    writer = csv.writer(file)
+    writer.writerows(dataset)
+
+print("\nDataset Saved Successfully!")
